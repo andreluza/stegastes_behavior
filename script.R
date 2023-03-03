@@ -2,20 +2,34 @@
 library(readxl)
 library(lubridate)
 require(dplyr)
-data_damself <- read_excel('data.xlsx',trim_ws = TRUE)  %>%
-  mutate(variable_code = ifelse (variable == "bites", 0,1))
+library(tidyr)
+data_damself <- read_excel('data.xlsx',trim_ws = TRUE)  
+data_damself <- data_damself %>% 
+  filter (count >0) %>%
+  uncount(count) %>%
+  group_by(variable) %>%
+  mutate(behavior =  +(row_number() <= first(variable))) %>%
+  ungroup
+
+# each behavior
+data_damself<-data_damself%>% 
+  group_by(individual) %>%
+  #arrange(variable)%>%
+  mutate (Count = 1:n(),
+          code_beh = recode (variable, 
+                             "bites" = 1,
+                             "interespecific_chase"=0))
 
 # transition matrix
 require(reshape)
-wide_df <- cast (formula = individual ~ sequence_obs,
-      value="variable_code",
-      fill = NA,
-      fun.aggregate = sum,  
-  data = data_damself)
-
+# bites
+wide_df_bites <- cast (formula = individual ~ Count,
+                       value="code_beh",
+                       fill = NA,
+                       fun.aggregate = sum,  
+                       data = data_damself)
 
 # designing the model to test transitions/dynamics
-
 sink("Model_dyn.txt")
 cat("
     model {
@@ -53,9 +67,9 @@ sink()
 
 ## bundle data
 
-str(jags.data <- list(y = wide_df[,-1], 
-                      nind = nrow(wide_df), 
-                      n_seq= ncol(wide_df[,-1])))
+str(jags.data <- list(y = wide_df_bites[,-1], 
+                      nind = nrow(wide_df_bites), 
+                      n_seq= ncol(wide_df_bites[,-1])))
 
 # Set initial values
 zst <- apply(wide_df[,-1], 1, max, na.rm = TRUE)	# Observed occurrence as inits for z
