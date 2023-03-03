@@ -6,8 +6,7 @@
     for (i in 1:nind){
       gamma[i]~dunif (0,1) # parameter of state transition
       phi[i]~dunif (0,1) # parameter of state persistence
-  
-    }
+      }
     
     ############ Model ########################
     for (i in 1:nind){
