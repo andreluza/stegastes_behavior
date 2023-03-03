@@ -223,7 +223,7 @@ colnames(test) <- c("individual", "chase", "bit")
 # persecution vs forraging
 ggplot (test %>%
           filter (chase != "NA"), 
-        aes (x=bit, y=chase))+
+        aes (y=bit, x=chase))+
   geom_point ()+
   geom_smooth(method = "lm")
 
