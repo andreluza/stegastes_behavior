@@ -1,0 +1,46 @@
+---
+title: "Stegastes fuscus behavior"
+date: "2023-03-02"
+output: github_document
+---
+
+Behavior of *Stegastes fuscus* in three different reef sites found around the CEBIMar, São Sebastião, São Paulo, BR 
+
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="50%",out.height="50%"}
+
+source ("script.R")
+
+
+a
+
+
+
+```
+
+
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+
+#### This map was produced using the following software and associated packages:
+
+```{r pressure, echo=F,warning=F,message=F}
+
+sessionInfo()
+
+
+```
