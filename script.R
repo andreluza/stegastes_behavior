@@ -104,7 +104,7 @@ a <- ggplot (df_plot,
              aes  (y=mean, x=State, 
                    colour=State, fill=State)) +
   
-  geom_errorbar(aes(ymin=X2.5.,ymax=X97.5.),width = 0.2,size=0.5,
+  geom_errorbar(aes(ymin=X2.5.,ymax=X97.5.),width = 0.2,size=1,
                 position=pd)  + 
   
   theme_classic() + 
@@ -112,7 +112,7 @@ a <- ggplot (df_plot,
   geom_hline(yintercept=0.5, color="gray10", size=1,alpha=0.4)+
   
   geom_point(position=(pdf_pt), 
-             size=1.5)+ 
+             size=3.5)+ 
   
   geom_vline(xintercept = 0, linetype="dashed", 
              color = "gray50", size=0.5)+
