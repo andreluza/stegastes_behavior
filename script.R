@@ -12,9 +12,21 @@ require(jagsUI)
 require(coda)
 
 
-# load data
+# load data Andre
 data_damself <- read_excel('data.xlsx',trim_ws = TRUE)  
-data_damself <- data_damself %>% 
+
+# load data Renato
+data_damself_renato <- read_excel('Dados_Stegastes_renato.xlsx',trim_ws = TRUE)  %>%
+  mutate (sequence_obs = as.numeric(sequence_obs)) %>%
+  mutate (individual = max(data_damself$individual)+individual)
+
+# bind
+data_damself<- rbind (data_damself,
+                      data_damself_renato)
+
+# arrange data
+data_damself_shifts <- data_damself %>% 
+  filter (sequence_obs != "NA") %>%
   filter (count >0) %>%
   uncount(count) %>%
   group_by(variable) %>%
@@ -22,17 +34,21 @@ data_damself <- data_damself %>%
   ungroup
 
 # each behavior
-data_damself<-data_damself%>% 
+data_damself_shifts<-data_damself_shifts%>% 
   group_by(individual) %>%
   #arrange(variable)%>%
   mutate (Count = 1:n(),
           code_beh_bite = recode (variable, 
                              "bites" = 1,
-                             "interespecific_chase"=0),
+                             "interspecific_chase"=0,
+                             "intraspecific_chase"=0),
           code_beh_chase = recode (variable, 
                                   "bites" = 0,
-                                  "interespecific_chase"=1)
+                                  "interspecific_chase"=1,
+                                  "intraspecific_chase" =1)
           )
+
+
 
 # transition matrix
 require(reshape)
@@ -41,13 +57,13 @@ wide_df_bites <- cast (formula = individual ~ Count,
                        value="code_beh_bite",
                        fill = NA,
                        fun.aggregate = sum,  
-                       data = data_damself)
+                       data = data_damself_shifts)
 # chase
 wide_df_chase <- cast (formula = individual ~ Count,
                        value="code_beh_chase",
                        fill = NA,
                        fun.aggregate = sum,  
-                       data = data_damself)
+                       data = data_damself_shifts)
 
 
 
@@ -66,13 +82,12 @@ cat("
     ############ Model ########################
     for (i in 1:nind){
     
-      
         for (t in 2:n_seq){
     
             ### dynamic model
             ### defining occupancy probability  ###
             muZ[i,t] <- y[i,t-1] * (phi[i]) + ### if bite, p of persist biting
-                        (1-y[i,t-1]) * gamma[i] ###  if chase, p of bite
+                        (1-y[i,t-1]) * gamma[i]  ###  if chase, p of shifting to bite
                         
             y[i,t] ~ dbern(muZ[i,t])
     
@@ -93,11 +108,6 @@ sink()
 str(jags.data <- list(y = wide_df_bites[,-1], 
                       nind = nrow(wide_df_bites), 
                       n_seq= ncol(wide_df_bites[,-1])))
-
-# Set initial values
-zst <- apply(wide_df[,-1], 1, max, na.rm = TRUE)	# Observed occurrence as inits for z
-zst[zst == '-Inf'] <- 1 # max of c(NA,NA,NA) with na.rm = TRUE returns -Inf, change to 1
-inits <- function(){ list(y = zst)}
 
 
 ## MCMC settings
@@ -145,21 +155,23 @@ pdf_pt <- position_dodge(dodge)
 # plot
 a <- ggplot (mcmc_res, 
              
-             aes  (y=mean, x=Behavior, 
-                   colour=State, fill=State)) +
+             aes  (y=mean, x=State, 
+                   fill=Behavior),colour="black") +
   
   geom_errorbar(aes(ymin=X2.5.,ymax=X97.5.),width = 0.2,size=1,
                 position=pd)  + 
   
+
   theme_classic() + 
   
   geom_hline(yintercept=0.5, linetype="dashed", 
              color = "gray50", size=0.5)+
   
+  geom_vline(xintercept=1.5, linetype="dashed", 
+             color = "gray50", size=0.5)+
+  
   geom_point(position=(pdf_pt), 
              size=3.5)+ 
-  
-  scale_color_manual(values=c("#f2a154", "#0e49b5")) + 
   
   xlab("State") + 
   
@@ -169,10 +181,49 @@ a <- ggplot (mcmc_res,
   
   theme(axis.text = element_text(angle = 0,size=12),
         axis.title = element_text(angle = 0,size=14),
-        legend.position = c(0.8,0.9))
+        legend.position = "none") + 
+  
+  annotate(geom="text",x=2,
+           y=0.62,
+           label="Chase->Bite",
+           color="black")+
+  annotate(geom="text",x=2.1,
+           y=0.37,
+           label="Bite->Chase",
+           color="black")+
+annotate(geom="text",x=0.87,
+         y=0.76,
+         label="Bite",
+         color="black")+
+  annotate(geom="text",x=1.1,
+           y=0.57,
+           label="Chase",
+           color="black")
+
 
 a
 
 # forraging vs percution rate
+data_damself %>% 
+  group_by (age, variable) %>%
+  summarise(ct = sum (count))
+  
 
+test<-data_damself %>% 
+  mutate (coded_behavior = recode (variable, 
+                         "bites" = 1,
+                         "interspecific_chase"=0,
+                         "intraspecific_chase"=0)) %>%
+  group_by (individual, coded_behavior) %>%
+  summarise(ct = sum (count)) %>%
+  cast(individual~coded_behavior, value="ct")
+
+colnames(test) <- c("individual", "chase", "bit")
+
+# persecution vs forraging
+ggplot (test %>%
+          filter (chase != "NA"), 
+        aes (x=bit, y=chase))+
+  geom_point ()+
+  geom_smooth(method = "lm")
 

@@ -11,13 +11,12 @@
     ############ Model ########################
     for (i in 1:nind){
     
-      
         for (t in 2:n_seq){
     
             ### dynamic model
             ### defining occupancy probability  ###
             muZ[i,t] <- y[i,t-1] * (phi[i]) + ### if bite, p of persist biting
-                        (1-y[i,t-1]) * gamma[i] ###  if chase, p of bite
+                        (1-y[i,t-1]) * gamma[i]  ###  if chase, p of shifting to bite
                         
             y[i,t] ~ dbern(muZ[i,t])
     
