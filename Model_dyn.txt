@@ -11,6 +11,7 @@
     ############ Model ########################
     for (i in 1:nind){
     
+      
         for (t in 2:n_seq){
     
             ### dynamic model
