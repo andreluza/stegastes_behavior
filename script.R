@@ -1,8 +1,18 @@
-# load data
+# . . . . . .  . . . . .  . . . . .  . . .
+#       Stegastes fuscus behavior        #
+# . . . . . .  . . . . .  . . . . .  . . .
+
+
+# load packages
 library(readxl)
 library(lubridate)
 require(dplyr)
 library(tidyr)
+require(jagsUI)
+require(coda)
+
+
+# load data
 data_damself <- read_excel('data.xlsx',trim_ws = TRUE)  
 data_damself <- data_damself %>% 
   filter (count >0) %>%
@@ -16,18 +26,30 @@ data_damself<-data_damself%>%
   group_by(individual) %>%
   #arrange(variable)%>%
   mutate (Count = 1:n(),
-          code_beh = recode (variable, 
+          code_beh_bite = recode (variable, 
                              "bites" = 1,
-                             "interespecific_chase"=0))
+                             "interespecific_chase"=0),
+          code_beh_chase = recode (variable, 
+                                  "bites" = 0,
+                                  "interespecific_chase"=1)
+          )
 
 # transition matrix
 require(reshape)
 # bites
 wide_df_bites <- cast (formula = individual ~ Count,
-                       value="code_beh",
+                       value="code_beh_bite",
                        fill = NA,
                        fun.aggregate = sum,  
                        data = data_damself)
+# chase
+wide_df_chase <- cast (formula = individual ~ Count,
+                       value="code_beh_chase",
+                       fill = NA,
+                       fun.aggregate = sum,  
+                       data = data_damself)
+
+
 
 # designing the model to test transitions/dynamics
 sink("Model_dyn.txt")
@@ -44,6 +66,7 @@ cat("
     ############ Model ########################
     for (i in 1:nind){
     
+      
         for (t in 2:n_seq){
     
             ### dynamic model
@@ -76,46 +99,53 @@ zst <- apply(wide_df[,-1], 1, max, na.rm = TRUE)	# Observed occurrence as inits 
 zst[zst == '-Inf'] <- 1 # max of c(NA,NA,NA) with na.rm = TRUE returns -Inf, change to 1
 inits <- function(){ list(y = zst)}
 
-#This is wrong
-## Parameters to monitor
-#########################
-
-## long form
-params <- c(
-  ## parameters
-  "gamma","phi","av_gamma","av_phi")
 
 ## MCMC settings
-######################
-## short form
- na <- 1000; nb <- 2000; ni <- 4000; nc <- 3; nt <- 1
-require(jagsUI)
-require(coda)
-samples_MCMC  <- jags(data = jags.data,
-                  parameters.to.save=params, 
-                  model = "Model_dyn.txt", 
-                  inits = NULL,
-                  n.chains = nc, 
-                  n.thin = nt, 
-                  n.iter = ni, 
-                  n.burnin = nb)
+na <- 1000; nb <- 2000; ni <- 4000; nc <- 3; nt <- 1
 
+## Parameters to monitor
+params <- c("gamma","phi","av_gamma","av_phi")
 
-# data to plot
-df_plot <- data.frame (
-  samples_MCMC$summary[(grep ("av",rownames(samples_MCMC$summary))),],
-  State = c("Bite->chase", "Bite->bite")
-)
+# apply test for the two datasets
+mcmc_res <- lapply (list (wide_df_bites,
+              wide_df_chase), function (i) {
+
+    ## bundle data
+    str(jags.data <- list(y = i[,-1], 
+                          nind = nrow(i), 
+                          n_seq= ncol(i[,-1])))
+    
+    # run MCMC
+    samples_MCMC  <- jags(data = jags.data,
+                      parameters.to.save=params, 
+                      model = "Model_dyn.txt", 
+                      inits = NULL,
+                      n.chains = nc, 
+                      n.thin = nt, 
+                      n.iter = ni, 
+                      n.burnin = nb)
+    
+    # data to plot
+    df_plot <- data.frame (
+      samples_MCMC$summary[(grep ("av",rownames(samples_MCMC$summary))),],
+      State = c("Shift", "Keep")
+    )
+
+df_plot
+})
+names(mcmc_res) <- c("Bite", "Chase")
+mcmc_res<- do.call(rbind, mcmc_res)
+mcmc_res$Behavior <- sapply (strsplit (rownames(mcmc_res),"\\."), "[[",1)
 
 # plot
 require(ggplot2)
 dodge <- c(0.4,0.4)
 pd <- position_dodge(dodge)
 pdf_pt <- position_dodge(dodge)
-
-a <- ggplot (df_plot, 
+# plot
+a <- ggplot (mcmc_res, 
              
-             aes  (y=mean, x=State, 
+             aes  (y=mean, x=Behavior, 
                    colour=State, fill=State)) +
   
   geom_errorbar(aes(ymin=X2.5.,ymax=X97.5.),width = 0.2,size=1,
@@ -123,13 +153,11 @@ a <- ggplot (df_plot,
   
   theme_classic() + 
   
-  geom_hline(yintercept=0.5, color="gray10", size=1,alpha=0.4)+
+  geom_hline(yintercept=0.5, linetype="dashed", 
+             color = "gray50", size=0.5)+
   
   geom_point(position=(pdf_pt), 
              size=3.5)+ 
-  
-  geom_vline(xintercept = 0, linetype="dashed", 
-             color = "gray50", size=0.5)+
   
   scale_color_manual(values=c("#f2a154", "#0e49b5")) + 
   
@@ -139,10 +167,12 @@ a <- ggplot (df_plot,
   
   #xlim(-0.5,0.5) +
   
-  theme(axis.text.x = element_text(angle = 0,size=10),
-        legend.position = "none")
+  theme(axis.text = element_text(angle = 0,size=12),
+        axis.title = element_text(angle = 0,size=14),
+        legend.position = c(0.8,0.9))
 
 a
 
+# forraging vs percution rate
 
 
