@@ -88,9 +88,21 @@ cat("
     ",fill = TRUE)
 sink()
 
+## bundle data
+
+str(jags.data <- list(y = wide_df_bites[,-1], 
+                      nind = nrow(wide_df_bites), 
+                      n_seq= ncol(wide_df_bites[,-1])))
+
+# Set initial values
+zst <- apply(wide_df[,-1], 1, max, na.rm = TRUE)	# Observed occurrence as inits for z
+zst[zst == '-Inf'] <- 1 # max of c(NA,NA,NA) with na.rm = TRUE returns -Inf, change to 1
+inits <- function(){ list(y = zst)}
+
 
 ## MCMC settings
 na <- 1000; nb <- 2000; ni <- 4000; nc <- 3; nt <- 1
+
 ## Parameters to monitor
 params <- c("gamma","phi","av_gamma","av_phi")
 
