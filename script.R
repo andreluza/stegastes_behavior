@@ -76,7 +76,7 @@ zst <- apply(wide_df[,-1], 1, max, na.rm = TRUE)	# Observed occurrence as inits 
 zst[zst == '-Inf'] <- 1 # max of c(NA,NA,NA) with na.rm = TRUE returns -Inf, change to 1
 inits <- function(){ list(y = zst)}
 
-
+#This is wrong
 ## Parameters to monitor
 #########################
 
