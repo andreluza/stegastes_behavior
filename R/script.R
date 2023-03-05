@@ -322,7 +322,7 @@ plot_cor <- ggplot (test_rel %>%
            color="#B3005E")+
   annotate(geom="text",
            x=10,
-           y=13,
+           y=15,
            label="rho=0.12,ns",
            size=5,
            color="black")
