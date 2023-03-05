@@ -34,7 +34,8 @@ data_damself_carol <- read_excel(here ("Data",'STEFUS_data_TBanha.xlsx'),trim_ws
 # bind
 data_damself<- rbind (data_damself,
                       data_damself_renato,
-                      data_damself_thomas)
+                      data_damself_thomas,
+                      data_damself_carol)
 
 
 # arrange data for state-space model
@@ -225,10 +226,10 @@ annotate(geom="text",x=0.87,
            y=0.57,
            label="Chase",
            color="black")
-
-pdf (here ("output", "rates.pdf"))
+#save
+#pdf (here ("output", "rates.pdf"))
 a
-dev.off()
+#dev.off()
 
 # averages
 
@@ -243,9 +244,6 @@ mcmc_res_av[,c(1,3,7)]
 # number of individuals
 length(unique(data_damself$individual))
 
-# time
-length(unique(data_damself$individual)) * 3 / 60
-
 # average rates
 data_damself %>% 
   filter (variable != "NA") %>%
@@ -259,20 +257,10 @@ data_damself %>%
             sd=sd(count))
 
 
-# average rates
-data_damself %>% 
-  filter (variable != "NA") %>%
-  mutate (coded_behavior = recode (variable, 
-                                   "bites" = 1,
-                                   "interspecific_chase"=0,
-                                   "intraspecific_chase"=0,
-                                   "both_chase"=0)) %>%
-  group_by (site,age) %>%
-  summarise(av = mean(count),
-            sd=sd(count))
+
 
 # boxplots
-data_damself %>% 
+summary_stats <- data_damself %>% 
   filter (variable != "NA") %>%
   filter (variable != "both_chase") %>%
   mutate (coded_behavior = recode (variable, 
@@ -314,7 +302,7 @@ colnames(test_rel) <- c("individual", "age","chase", "bit")
 test_rel$chase[is.na(test_rel$chase)] <- 0
 
 # persecution vs forraging
-ggplot (test_rel %>%
+plot_cor <- ggplot (test_rel %>%
           filter (chase != "NA"), 
         aes (y=bit, x=chase,group=age,colour=age))+
   scale_colour_viridis_d(option="magma",end=0.5)+
@@ -325,17 +313,17 @@ ggplot (test_rel %>%
   theme_bw() +
   theme (axis.title = element_text(size=14),
          axis.text = element_text(size=12),
-         legend.position = c(0.9,0.9)) + 
+         legend.position = c(0.85,0.9)) + 
   annotate(geom="text",
            x=16,
            y=11,
-           label="rho=-0.18,ns",
+           label="rho=-0.34,ns",
            size=5,
            color="#B3005E")+
   annotate(geom="text",
            x=10,
            y=13,
-           label="rho=0.08,ns",
+           label="rho=0.12,ns",
            size=5,
            color="black")
 
@@ -348,5 +336,22 @@ cor.test (test_rel$chase[which(test_rel$age == "intermediary")],
 
 
 # chased spp
+chased_spp<- lapply (unique(data_damself$site), function (i)
 
-table(gsub (" ","", gsub('[0-9]+', '', unlist(strsplit (data_damself$species_chased, ",")))))
+  data.frame (count=table(gsub (" ","", gsub('[0-9]+', '', 
+                           unlist(strsplit (data_damself$species_chased[which(data_damself$site == i)], ","))))))
+)
+names(chased_spp) <- unique(data_damself$site)
+chased_spp <- do.call(rbind,chased_spp)
+chased_spp$site <- gsub('[0-9]+', '', rownames(chased_spp))
+
+# plot
+plot_freq_chased <- ggplot(chased_spp%>%
+         filter (count.Var1 != "NA"), aes(fill=count.Var1, y=count.Freq, x=site)) + 
+  geom_bar(position="fill", stat="identity")+
+  theme_bw() + 
+  scale_fill_viridis_d(option="magma",direction=-1,end=0.9)+
+  ylab ("Frequency (# chases)") + 
+  xlab ("Site")+
+  theme(legend.title = element_blank())
+
