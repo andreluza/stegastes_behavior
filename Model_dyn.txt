@@ -3,7 +3,7 @@
     
     ############ Priors
     
-    for (i in 1:nind){
+    for (i in 1:nsite){
       gamma[i]~dunif (0,1) # parameter of state transition
       phi[i]~dunif (0,1) # parameter of state persistence
       }
@@ -15,8 +15,8 @@
     
             ### dynamic model
             ### defining occupancy probability  ###
-            muZ[i,t] <- y[i,t-1] * (phi[i]) + ### if bite, p of persist biting
-                        (1-y[i,t-1]) * gamma[i]  ###  if chase, p of shifting to bite
+            muZ[i,t] <- y[i,t-1] * (phi[site[i]]) + ### if bite, p of persist biting
+                        (1-y[i,t-1]) * gamma[site[i]]  ###  if chase, p of shifting to bite
                         
             y[i,t] ~ dbern(muZ[i,t])
     
@@ -26,6 +26,7 @@
     # derived parameters
     av_gamma <- mean(gamma)
     av_phi <- mean(phi)
+    
     
     }## end of the model
     
