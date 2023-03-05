@@ -4,7 +4,8 @@ date: "2023-03-02"
 output: github_document
 ---
 
-Behavior of *Stegastes fuscus* in three different reef sites found around the CEBIMar, São Sebastião, São Paulo, BR 
+Behavior of *Stegastes fuscus* in three different reef sites found around the CEBIMar, São Sebastião, São Paulo, BR.
+We tested whether the relationship between # chases and # bites differed between adults and subadults, and whether the transitions between these behaviors changed across sites.
 
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -17,11 +18,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+We ran two state-space models to estimate the transition rates between the following levels: model 1: probability of keep biting (parameter phi), probability of shift from chase to bite (parameter gamma); model 2: probability of keep chasing (phi), and probability of shift from bite to chase (phi). PS: The correct model would be a multi-state model where all these probabilities could be estimated in one unique model (had no time to implement it).
+Each model has the following structure:
 
+```{r comment='', echo = F}
+cat(readLines('Model_dyn.txt'), sep = '\n')
+```
 
-```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="50%",out.height="50%"}
+And the resulting transition rates between behavioral states (chase and bites) were:
 
-source ("script.R")
+```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="80%",out.height="80%",results='hide'}
+
+source ("R/script.R")
 
 
 a
@@ -30,13 +38,47 @@ a
 
 ```
 
+Useful summary statistics
+
+```{r, echo = T, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="70%",out.height="70%",results='hide'}
+
+
+summary_stats
+
+
+
+```
+
+
+Relationship between foraging (bites) and persecution (chases) rates, for adult and subadult damsel fish.
+
+```{r, echo = T, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="70%",out.height="70%",results='hide'}
+
+
+plot_cor
+
+
+
+```
+
+
+The composition of chased species 
+
+```{r, echo = T, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="70%",out.height="70%",results='hide'}
+
+
+plot_freq_chased
+
+
+
+```
 
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 
-#### This map was produced using the following software and associated packages:
+#### These results were produced using the following software and associated packages:
 
 ```{r pressure, echo=F,warning=F,message=F}
 
