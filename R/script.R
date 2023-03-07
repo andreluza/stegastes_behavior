@@ -541,7 +541,7 @@ plot_freq_chased <- ggplot(chased_spp%>%
   geom_bar(position="fill", stat="identity")+
   theme_bw() + 
   scale_fill_viridis_d(option="magma",direction=-1,end=0.9)+
-  ylab ("Frequency (# chases)") + 
+  ylab ("Frequency (chase rates)") + 
   xlab ("Site")+
   my_layout
 plot_freq_chased
