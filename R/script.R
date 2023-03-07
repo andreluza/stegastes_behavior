@@ -434,6 +434,13 @@ data_anova_bites <- data_damself %>%
 # no effect of site and age on bite rates 
 summary(aov (formula = sum_count~ age*site,
        data=data_anova_bites))
+# plot 
+ggplot (data_anova_bites, aes (x=age, y=sum_count/3))+
+  geom_jitter()+
+  geom_boxplot (fill= "lightgreen",alpha=0.6)+
+  theme_bw()+xlab ("Age")+ylab ("# chases per minute")+
+  theme (axis.text = element_text(size=12),
+         axis.title = element_text(size=15))
 
 # chases
 data_anova_chase <- data_damself %>% 
@@ -461,8 +468,6 @@ plot_anova <- ggplot (data_anova_chase, aes (x=age, y=sum_count/3))+
   theme (axis.text = element_text(size=12),
          axis.title = element_text(size=15))
   
-
-
 # forraging vs percution rate
 test_rel<- data_damself %>% 
   filter (variable != "NA") %>%
@@ -526,6 +531,11 @@ chased_spp <- do.call(rbind,chased_spp)
 chased_spp$site <- gsub('[0-9]+', '', rownames(chased_spp))
 
 # plot
+my_layout <- theme(legend.title = element_blank(),
+                   axis.text = element_text(size=12),
+                   axis.title = element_text(size=15),
+                   legend.direction = 'vertical')
+
 plot_freq_chased <- ggplot(chased_spp%>%
          filter (count.Var1 != "NA"), aes(fill=count.Var1, y=count.Freq, x=site)) + 
   geom_bar(position="fill", stat="identity")+
@@ -533,7 +543,6 @@ plot_freq_chased <- ggplot(chased_spp%>%
   scale_fill_viridis_d(option="magma",direction=-1,end=0.9)+
   ylab ("Frequency (# chases)") + 
   xlab ("Site")+
-  theme(legend.title = element_blank(),
-        axis.text = element_text(size=12),
-               axis.title = element_text(size=15))
+  my_layout
+plot_freq_chased
 

@@ -18,7 +18,12 @@ phi), probability of shift from chase to bite (parameter gamma); model
 2: probability of keep chasing (phi), and probability of shift from bite
 to chase (phi). PS: The correct model would be a multi-state model where
 all these probabilities could be estimated in one unique model (had no
-time to implement it). Each model has the following structure:
+time to implement it).
+
+You need to install the software “JAGS” to run these analyses. Find the
+link here \[<https://sourceforge.net/projects/mcmc-jags/>\].
+
+Each model has the following structure:
 
 
         model {
