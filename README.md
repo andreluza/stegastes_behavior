@@ -55,9 +55,15 @@ time to implement it). Each model has the following structure:
         
 
 And the resulting transition rates between behavioral states (chase and
-bites) were:
-
+bites) were: - transitions of states - ages
 <img src="README_files/figure-gfm/unnamed-chunk-2-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
+
+Average rates
+
+- transitions of states - sites
+  <img src="README_files/figure-gfm/unnamed-chunk-4-1.png" width="80%" height="80%" style="display: block; margin: auto;" />
+
+Averaged rates
 
 Useful summary statistics
 
@@ -65,7 +71,29 @@ Useful summary statistics
 summary_stats
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-3-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
+<img src="README_files/figure-gfm/unnamed-chunk-6-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
+
+Analysis of variance
+
+No difference of \# bites among sites and ages
+
+``` r
+summary(aov (formula = sum_count~ age*site,
+       data=data_anova_bites))
+```
+
+Higher number of chases among subadults
+
+``` r
+# no effect of site and age on bite rates 
+summary(aov (formula = sum_count~ age*site,
+             data=data_anova_chase))
+
+
+plot_anova
+```
+
+<img src="README_files/figure-gfm/unnamed-chunk-8-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
 Relationship between foraging (bites) and persecution (chases) rates,
 for adult and subadult damsel fish.
@@ -74,7 +102,7 @@ for adult and subadult damsel fish.
 plot_cor
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-4-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
+<img src="README_files/figure-gfm/unnamed-chunk-9-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
 The composition of chased species
 
@@ -82,7 +110,7 @@ The composition of chased species
 plot_freq_chased
 ```
 
-<img src="README_files/figure-gfm/unnamed-chunk-5-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
+<img src="README_files/figure-gfm/unnamed-chunk-10-1.png" width="70%" height="70%" style="display: block; margin: auto;" />
 
 <!-- badges: start -->
 <!-- badges: end -->

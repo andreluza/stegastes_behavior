@@ -26,13 +26,42 @@ cat(readLines('Model_dyn.txt'), sep = '\n')
 ```
 
 And the resulting transition rates between behavioral states (chase and bites) were:
-
+- transitions of states - ages
 ```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="80%",out.height="80%",results='hide'}
 
 source ("R/script.R")
 
 
 a
+
+
+
+```
+
+Average rates
+```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="80%",out.height="80%",results='hide'}
+
+mcmc_res_av[,c(1,3,7)]
+
+
+```
+
+- transitions of states - sites
+```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="80%",out.height="80%",results='hide'}
+
+
+a_sites
+
+
+
+
+```
+
+Averaged rates
+```{r, echo = F, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="80%",out.height="80%",results='hide'}
+
+
+mcmc_res_av_sites[,c(1,3,7)]
 
 
 
@@ -46,6 +75,32 @@ Useful summary statistics
 summary_stats
 
 
+
+```
+
+
+Analysis of variance
+
+No difference of # bites among sites and ages
+```{r, echo = T, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="70%",out.height="70%",results='hide'}
+
+
+summary(aov (formula = sum_count~ age*site,
+       data=data_anova_bites))
+
+```
+
+
+Higher number of chases among subadults
+```{r, echo = T, fig.height=5,fig.width=6,fig.align= "center",fig.margin=T, message=F, warning=F,out.width="70%",out.height="70%",results='hide'}
+
+
+# no effect of site and age on bite rates 
+summary(aov (formula = sum_count~ age*site,
+             data=data_anova_chase))
+
+
+plot_anova
 
 ```
 
